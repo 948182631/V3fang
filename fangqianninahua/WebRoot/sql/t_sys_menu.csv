@@ -1,0 +1,8 @@
+"MENU_ID","MENU_IDS","MENU_NAME","MENU_HREF","MENU_LEVEL","MENU_SEQ","MENU_PARENT","MENU_ROLE"
+"15","S00002003","管理成员S","page/tab/index.jsp","2","13","S00002","ROLE_CLERK"
+"1","S00001","通信录管理A","","1","2","",""
+"2","S00001002","管理部门A","page/tab/index.jsp","2","21","S00001",""
+"3","S00001001","管理部门A","page/tab/index.jsp","2","21","S00001",""
+"11","S00002","通信录管理","","1","1","","ROLE_SYSADMIN,ROLE_USER,ROLE_CLERK"
+"12","S00002002","管理部门S","page/tab/index.jsp","2","12","S00002","ROLE_USER"
+"13","S00002001","查看二维码","page/tab/x.jsp","2","11","S00002","ROLE_SYSADMIN"

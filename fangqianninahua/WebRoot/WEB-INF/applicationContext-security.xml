@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- - Application context containing authentication, channel - security 
+	and web URI beans. - - Only used by "filter" artifact. - -->
+
+<b:beans xmlns="http://www.springframework.org/schema/security"
+	xmlns:b="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+                        http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.0.xsd">
+	<http auto-config="true">
+		<!-- 该路径下的资源不用过滤 -->
+		<intercept-url pattern="/skin/**" filters="none" />
+		<intercept-url pattern="/H/**" filters="none" />
+		<!-- 指定登录页面，不进行拦截 -->
+		<form-login login-page="/page/login.jsp" />
+		<intercept-url pattern="/page/login.jsp" filters="none" />
+		<intercept-url pattern="/msg/sendMsg.json" filters="none" />
+		<http-basic />
+		<intercept-url pattern="/page/loginerror.jsp"  filters="none"  />  
+		<!-- 登出 -->
+		<logout logout-success-url="/page/login.jsp" />
+		<intercept-url pattern="/**" access="ROLE_USER" /> 
+		<remember-me />
+		<!-- FILTER_SECURITY_INTERCEPTOR是Spring Security默认的Filter -->
+		<custom-filter ref="springmvcFilter" before="FILTER_SECURITY_INTERCEPTOR" />
+		<!-- 登录处理 -->
+		<custom-filter ref="loginAuthenticationFilter" before="FORM_LOGIN_FILTER" />
+	</http>
+
+	<!-- 登录处理 -->
+	<b:bean id="loginAuthenticationFilter"
+		class="com.fang.security.LoginAuthenticationProcessingFilter">
+		<b:property name="authenticationSuccessHandler" ref="loginAuthenticationSuccessHandler"></b:property>
+		<b:property name="authenticationFailureHandler" ref="simpleUrlAuthenticationFailureHandler"></b:property>
+		<b:property name="authenticationManager" ref="authenticationManager"></b:property>
+	</b:bean>
+	<!-- 认证成功 -->
+	<b:bean id="loginAuthenticationSuccessHandler"
+		class="org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler">
+		<b:property name="defaultTargetUrl" value="/index.jsp"></b:property>
+	</b:bean>
+	<!-- 认证失败 -->
+	<b:bean id="simpleUrlAuthenticationFailureHandler"
+		class="org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler">
+		<b:property name="defaultFailureUrl" value="/page/loginerror.jsp"></b:property>
+	</b:bean>
+
+	<!-- 一个自定义的filter，必须包含authenticationManager,accessDecisionManager,securityMetadataSource三个属性， 
+		我们的所有控制将在这三个类中实现，解释详见具体配置 -->
+	<b:bean id="springmvcFilter" class="com.fang.security.SpringmvcFilterInterceptor">
+		<b:property name="authenticationManager" ref="authenticationManager" />
+		<b:property name="accessDecisionManager" ref="accessDecisionManager" />
+		<b:property name="securityMetadataSource" ref="securityMetadataSource" />
+	</b:bean>
+	<!-- 访问决策器：用来决定用户是否拥有访问权限的关键类，其接口为AccessDecisionManager -->
+	<b:bean id="accessDecisionManager"
+		class="org.springframework.security.access.vote.AffirmativeBased">
+		<b:property name="decisionVoters">
+			<b:list>
+				<b:bean class="org.springframework.security.access.vote.RoleVoter" />
+				<b:bean
+					class="org.springframework.security.access.vote.AuthenticatedVoter" />
+			</b:list>
+		</b:property>
+	</b:bean>
+	<!-- 资源权限获取器：用来取得访问某个URL或者方法所需要的权限，接口为SecurityMetadataSource 资源角色授权器需要单独自定义注入 -->
+	<b:bean id="securityMetadataSource" class="com.fang.security.SpringmvcFilterInvocation">
+		<!-- <b:constructor-arg name="resourcesDao" ref="resourcesDao"></b:constructor-arg> -->
+	</b:bean>
+
+	<!-- 认证管理器 <authentication-manager alias="authenticationManager"> <authentication-provider 
+		user-service-ref="userDetailsService"> <password-encoder hash="md5" /> </authentication-provider> 
+		</authentication-manager> -->
+	<!--<authentication-manager alias="authenticationManager"> <authentication-provider> 
+		<user-service> <user name="admin" authorities="ROLE_USER" /> </user-service> 
+		<password-encoder hash="md5" /> </authentication-provider> </authentication-manager> -->
+	<authentication-manager alias="authenticationManager">
+		<authentication-provider user-service-ref="userDetailsService">
+			 <password-encoder hash="md5" >
+				 <salt-source user-property="username"/>
+			 </password-encoder>
+		</authentication-provider>
+	</authentication-manager>
+	
+	
+	
+	
+	<b:bean id="userDetailsService" class="com.fang.security.UserDetailsServiceImpl"></b:bean>
+
+	<b:bean id="loggerListener"
+		class="org.springframework.security.authentication.event.LoggerListener" />
+</b:beans>
